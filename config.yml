@@ -1,0 +1,29 @@
+#config.yml
+version: "3.1"
+
+recipe: default.v1
+language: ru
+
+pipeline:
+  - name: WhitespaceTokenizer # Разделяет текст на слова (токен)
+  - name: RegexFeaturizer # Извлекает регулярные шаблоны
+  - name: LexicalSyntacticFeaturizer  # Извлекает синтаксические признаки
+  - name: CountVectorsFeaturizer # Представляет текст в виде векторов
+    analyzer: "char_wb"
+    min_ngram: 1
+    max_ngram: 4
+  - name: DIETClassifier # Главный классификатор намерений и сущностей
+    epochs: 100   #эпохи обучения
+    hidden_layers_sizes:
+      text: [256, 128] #два слоя нейронов
+  - name: EntitySynonymMapper # Обрабатывает синонимы сущностей
+  - name: ResponseSelector
+    epochs: 100
+
+policies:
+- name: MemoizationPolicy # Запоминает истории и воспроизводит известные пути
+- name: TEDPolicy  # Предсказывает следующее действие на основе ML
+  max_history: 5
+  epochs: 100
+- name: RulePolicy  # Обрабатывает правила из rules.yml
+assistant_id: 20250508-152336-level-veal

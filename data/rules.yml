@@ -1,0 +1,82 @@
+#rules.yml
+
+version: "3.1"
+
+rules:
+- rule: Fallback
+  steps:
+    - intent: nlu_fallback
+    - action: utter_default
+
+- rule: Выбор смены Мир наук
+  steps:
+    - intent: inform
+      entities:
+        - selected_program: "Мир наук и электроники"
+    - slot_was_set:
+        - selected_program: "Мир наук и электроники"
+    - action: utter_change_shift
+
+- rule: Выбор смены Roblox
+  steps:
+    - intent: inform
+      entities:
+        - selected_program: "Создание 3D-миров в Roblox"
+    - slot_was_set:
+        - selected_program: "Создание 3D-миров в Roblox"
+    - action: utter_change_shift
+
+- rule: Ответ на вопрос о датах
+  steps:
+    - intent: ask_about_dates
+    - action: action_ask_about_dates
+
+- rule: Ответ на вопрос о питании
+  steps:
+    - intent: ask_about_food
+    - action: action_ask_about_food
+
+- rule: Ответ на вопрос о предпочтениях питания
+  steps:
+    - intent: ask_about_preferences
+    - action: action_ask_about_preferences
+
+- rule: Ответ на вопрос о выездных мероприятиях
+  steps:
+    - intent: ask_about_events
+    - action: action_ask_about_events
+
+- rule: Ответ на вопрос о теме смены
+  steps:
+    - intent: ask_about_theme
+    - action: action_ask_about_theme
+
+- rule: Ответ на вопрос о содержании \"Мир наук\"
+  steps:
+    - intent: ask_about_science_content
+    - action: action_ask_about_science_content
+
+- rule: Ответ на вопрос о содержании \"Roblox\"
+  steps:
+    - intent: ask_about_roblox_content
+    - action: action_ask_about_roblox_content
+
+- rule: Ответ на вопрос о неполном дне
+  steps:
+    - intent: ask_about_part_time
+    - action: action_ask_about_part_time
+
+- rule: Ответ на вопрос о цене
+  steps:
+    - intent: ask_about_price
+    - action: action_ask_about_price
+
+- rule: Ответ на вопрос о скидках
+  steps:
+    - intent: ask_about_discounts
+    - action: action_ask_about_discounts
+
+- rule: Ответ на вопрос о времени пребывания
+  steps:
+    - intent: ask_about_hours
+    - action: action_ask_about_hours

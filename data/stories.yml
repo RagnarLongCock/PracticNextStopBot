@@ -1,0 +1,34 @@
+#stories.yml
+
+version: "3.1"
+
+stories:
+- story: Смена "Мир наук"
+  steps:
+    - intent: greet
+    - action: utter_greet
+    - intent: inform
+      entities:
+        - selected_program: "Мир наук и электроники"
+    - slot_was_set:
+        - selected_program: "Мир наук и электроники"
+    - action: utter_change_shift
+    - intent: ask_about_dates
+    - action: action_ask_about_dates
+    - intent: ask_about_food
+    - action: action_ask_about_food
+
+- story: Смена "Roblox"
+  steps:
+    - intent: greet
+    - action: utter_greet
+    - intent: inform
+      entities:
+        - selected_program: "Создание 3D-миров в Roblox"
+    - slot_was_set:
+        - selected_program: "Создание 3D-миров в Roblox"
+    - action: utter_change_shift
+    - intent: ask_about_dates
+    - action: action_ask_about_dates
+    - intent: ask_about_food
+    - action: action_ask_about_food
