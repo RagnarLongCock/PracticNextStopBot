@@ -37,7 +37,7 @@ stepBOTagain/
 ### 1. Клонирование репозитория
 
 ```bash
-git clone https://github.com/RagnarLongCock/NextStepBot.git
+git clone https://github.com/RagnarLongCock/PracticNextStopBot.git
 cd NextStepBot
 ```
 
