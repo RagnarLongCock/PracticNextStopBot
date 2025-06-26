@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Админка чат-бота</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+</head>
+<body>
+  <div class="admin-container">
+    <h1>Админ-панель чат-бота</h1>
+
+    <div class="intent-list">
+      <h2>Интенты</h2>
+      <ul id="intents"></ul>
+      <input type="text" id="newIntentName" placeholder="Новый интент..." />
+      <button id="addIntentBtn">Добавить интент</button>
+    </div>
+
+    <div class="intent-details">
+      <h2 id="intentTitle">Примеры фраз</h2>
+      <ul id="examples"></ul>
+      <input type="text" id="newExampleText" placeholder="Новая фраза..." />
+      <button id="addExampleBtn">Добавить фразу</button>
+    </div>
+
+    <div class="actions">
+      <button id="saveBtn">💾 Сохранить</button>
+      <button id="trainBtn">📦 Переобучить</button>
+    </div>
+  </div>
+
+  <script>
+    let selectedIntent = null;
+
+    async function fetchIntents() {
+      const res = await fetch('/api/intents');
+      const data = await res.json();
+      const list = document.getElementById('intents');
+      list.innerHTML = '';
+      data.forEach(intent => {
+        const li = document.createElement('li');
+        li.textContent = intent;
+        li.onclick = () => selectIntent(intent);
+        list.appendChild(li);
+      });
+    }
+
+    async function selectIntent(intentName) {
+      selectedIntent = intentName;
+      document.getElementById('intentTitle').textContent = `Фразы для интента: ${intentName}`;
+      const res = await fetch(`/api/intents/${intentName}`);
+      const data = await res.json();
+      const ul = document.getElementById('examples');
+      ul.innerHTML = '';
+      data.forEach(text => {
+        const li = document.createElement('li');
+        li.textContent = text;
+        ul.appendChild(li);
+      });
+    }
+
+    document.getElementById('addIntentBtn').onclick = async () => {
+      const intent = document.getElementById('newIntentName').value;
+      if (intent) {
+        await fetch('/api/intents', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: intent })
+        });
+        document.getElementById('newIntentName').value = '';
+        fetchIntents();
+      }
+    };
+
+    document.getElementById('addExampleBtn').onclick = async () => {
+      const text = document.getElementById('newExampleText').value;
+      if (text && selectedIntent) {
+        await fetch(`/api/intents/${selectedIntent}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
+        });
+        document.getElementById('newExampleText').value = '';
+        selectIntent(selectedIntent);
+      }
+    };
+
+    document.getElementById('saveBtn').onclick = async () => {
+      const res = await fetch('/api/save', { method: 'POST' });
+      alert((await res.json()).message);
+    };
+
+    document.getElementById('trainBtn').onclick = async () => {
+      const res = await fetch('/api/train', { method: 'POST' });
+      alert((await res.json()).message);
+    };
+
+    fetchIntents();
+  </script>
+</body>
+</html>
