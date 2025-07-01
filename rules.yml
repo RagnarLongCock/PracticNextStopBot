@@ -1,0 +1,34 @@
+version: '3.1'
+rules:
+- rule: Ответ на test
+  steps:
+  - intent: test
+  - action: action_test
+- rule: Автоответ для test
+  steps:
+  - intent: test
+  - action: action_test
+- rule: Ответ на testadmin
+  steps:
+  - intent: testadmin
+  - action: action_testadmin
+- rule: Ответ на вопрос testadmin
+  steps:
+  - intent: testadmin
+  - action: action_testadmin
+- rule: Ответ на вопрос AdminTest
+  steps:
+  - intent: AdminTest
+  - action: action_AdminTest
+- rule: Ответ на вопрос BBC
+  steps:
+  - intent: BBC
+  - action: action_BBC
+- rule: Ответ на вопрос Admin
+  steps:
+  - intent: Admin
+  - action: action_Admin
+- rule: Ответ на вопрос admintest
+  steps:
+  - intent: admintest
+  - action: action_admintest

@@ -2,100 +2,170 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Админка чат-бота</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+  <title>Админка бота</title>
+  <link rel="stylesheet" href="/static/admin.css" />
 </head>
 <body>
   <div class="admin-container">
-    <h1>Админ-панель чат-бота</h1>
+    <h1>🧠 Админ-панель чат-бота</h1>
 
-    <div class="intent-list">
-      <h2>Интенты</h2>
-      <ul id="intents"></ul>
-      <input type="text" id="newIntentName" placeholder="Новый интент..." />
-      <button id="addIntentBtn">Добавить интент</button>
-    </div>
+    <section>
+      <h2>➕ Добавить новый интент</h2>
+      <input type="text" id="new-intent-name" placeholder="Название интента">
+      <button onclick="createIntent()">Добавить интент</button>
+    </section>
 
-    <div class="intent-details">
-      <h2 id="intentTitle">Примеры фраз</h2>
-      <ul id="examples"></ul>
-      <input type="text" id="newExampleText" placeholder="Новая фраза..." />
-      <button id="addExampleBtn">Добавить фразу</button>
-    </div>
+    <section>
+      <h2>📚 Существующие интенты</h2>
+      <select id="intent-list" onchange="loadExamples()"></select>
+      <ul id="examples-list"></ul>
+      <input type="text" id="new-example" placeholder="Новая фраза">
+      <button onclick="addExample()">Добавить фразу</button>
+    </section>
 
-    <div class="actions">
-      <button id="saveBtn">💾 Сохранить</button>
-      <button id="trainBtn">📦 Переобучить</button>
-    </div>
+    <section>
+      <h2>💬 Ответы кастомных action'ов</h2>
+      <select id="response-list" onchange="loadResponseText()"></select>
+      <textarea id="response-text" rows="4" placeholder="Текст ответа..."></textarea>
+      <button onclick="saveResponse()">💾 Сохранить ответ</button>
+    </section>
+
+    <section>
+      <h2>⚙️ Управление моделью и ботом</h2>
+      <button onclick="trainModel()">🔁 Переобучить Rasa</button>
+      <button onclick="startBot()">▶️ Запустить бота</button>
+      <button onclick="stopBot()">⛔ Остановить бота</button>
+      <pre id="train-status"></pre>
+    </section>
   </div>
 
   <script>
-    let selectedIntent = null;
+    let responses = {};
 
-    async function fetchIntents() {
-      const res = await fetch('/api/intents');
-      const data = await res.json();
-      const list = document.getElementById('intents');
-      list.innerHTML = '';
-      data.forEach(intent => {
-        const li = document.createElement('li');
-        li.textContent = intent;
-        li.onclick = () => selectIntent(intent);
-        list.appendChild(li);
-      });
+    async function fetchJSON(url, options = {}) {
+      const res = await fetch(url, options);
+      return await res.json();
     }
 
-    async function selectIntent(intentName) {
-      selectedIntent = intentName;
-      document.getElementById('intentTitle').textContent = `Фразы для интента: ${intentName}`;
-      const res = await fetch(`/api/intents/${intentName}`);
-      const data = await res.json();
-      const ul = document.getElementById('examples');
-      ul.innerHTML = '';
-      data.forEach(text => {
-        const li = document.createElement('li');
-        li.textContent = text;
+    async function populateIntents() {
+      const intents = await fetchJSON("/api/intents");
+      const select = document.getElementById("intent-list");
+      select.innerHTML = "";
+      intents.forEach(name => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        select.appendChild(option);
+      });
+      if (intents.length) loadExamples();
+    }
+
+    async function loadExamples() {
+      const intent = document.getElementById("intent-list").value;
+      const examples = await fetchJSON(`/api/intents/${intent}`);
+      const ul = document.getElementById("examples-list");
+      ul.innerHTML = "";
+      examples.forEach((ex, idx) => {
+        const li = document.createElement("li");
+        li.innerHTML = `${ex} <button onclick="deleteExample('${intent}', ${idx})">🗑️</button>`;
         ul.appendChild(li);
       });
     }
 
-    document.getElementById('addIntentBtn').onclick = async () => {
-      const intent = document.getElementById('newIntentName').value;
-      if (intent) {
-        await fetch('/api/intents', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: intent })
-        });
-        document.getElementById('newIntentName').value = '';
-        fetchIntents();
+    async function deleteExample(intent, index) {
+      await fetch(`/api/intents/${intent}/${index}`, { method: "DELETE" });
+      loadExamples();
+    }
+
+    async function addExample() {
+      const intent = document.getElementById("intent-list").value;
+      const text = document.getElementById("new-example").value.trim();
+      if (!text) return;
+      await fetch(`/api/intents/${intent}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text })
+      });
+      document.getElementById("new-example").value = "";
+      loadExamples();
+    }
+
+    async function createIntent() {
+      const name = document.getElementById("new-intent-name").value.trim();
+      if (!name) return;
+      const res = await fetch("/api/intents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name })
+      });
+      const msg = await res.json();
+      alert(msg.message);
+      document.getElementById("new-intent-name").value = "";
+      populateIntents();
+      loadResponses();
+    }
+
+    async function loadResponses() {
+      responses = await fetchJSON("/api/responses");
+      const select = document.getElementById("response-list");
+      select.innerHTML = "";
+      Object.keys(responses).forEach(key => {
+        const option = document.createElement("option");
+        option.value = key;
+        option.textContent = key;
+        select.appendChild(option);
+      });
+      if (Object.keys(responses).length > 0) {
+        loadResponseText();
       }
-    };
+    }
 
-    document.getElementById('addExampleBtn').onclick = async () => {
-      const text = document.getElementById('newExampleText').value;
-      if (text && selectedIntent) {
-        await fetch(`/api/intents/${selectedIntent}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text })
-        });
-        document.getElementById('newExampleText').value = '';
-        selectIntent(selectedIntent);
-      }
-    };
+    function loadResponseText() {
+      const action = document.getElementById("response-list").value;
+      const data = responses[action];
+      const text = typeof data === "string" ? data : (data?.default || "");
+      document.getElementById("response-text").value = text;
+    }
 
-    document.getElementById('saveBtn').onclick = async () => {
-      const res = await fetch('/api/save', { method: 'POST' });
-      alert((await res.json()).message);
-    };
+    async function saveResponse() {
+      const action = document.getElementById("response-list").value;
+      const text = document.getElementById("response-text").value;
+      await fetch(`/api/responses/${action}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text })
+      });
+      alert("Ответ сохранён");
+    }
 
-    document.getElementById('trainBtn').onclick = async () => {
-      const res = await fetch('/api/train', { method: 'POST' });
-      alert((await res.json()).message);
-    };
+    async function trainModel() {
+      const pre = document.getElementById("train-status");
+      pre.textContent = "⏳ Переобучение...";
+      const res = await fetch("/api/train", { method: "POST" });
+      const msg = await res.json();
+      pre.textContent = msg.message;
+    }
 
-    fetchIntents();
+    async function startBot() {
+      const pre = document.getElementById("train-status");
+      pre.textContent = "▶️ Запуск...";
+      const res = await fetch("/api/start-bot", { method: "POST" });
+      const msg = await res.json();
+      pre.textContent = msg.message;
+    }
+
+    async function stopBot() {
+      const pre = document.getElementById("train-status");
+      pre.textContent = "⛔ Остановка...";
+      const res = await fetch("/api/stop-bot", { method: "POST" });
+      const msg = await res.json();
+      pre.textContent = msg.message;
+    }
+
+    window.onload = () => {
+      populateIntents();
+      loadResponses();
+    };
   </script>
 </body>
 </html>

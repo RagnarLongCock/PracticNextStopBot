@@ -1,57 +1,54 @@
-#domain.yml
-
-version: "3.1"
-
+version: '3.1'
 intents:
-  - greet
-  - inform
-  - ask_about_dates
-  - ask_about_food
-  - ask_about_preferences
-  - ask_about_events
-  - ask_about_theme
-  - ask_about_science_content
-  - ask_about_roblox_content
-  - ask_about_part_time
-  - ask_about_price
-  - ask_about_discounts
-  - ask_about_hours
-  - nlu_fallback
+- greet
+- inform
+- ask_about_dates
+- ask_about_food
+- ask_about_preferences
+- ask_about_events
+- ask_about_theme
+- ask_about_science_content
+- ask_about_roblox_content
+- ask_about_part_time
+- ask_about_price
+- ask_about_discounts
+- ask_about_hours
+- nlu_fallback
 
+- hatsune
+- dude
 entities:
-  - selected_program
-
+- selected_program
 slots:
   selected_program:
     type: text
     influence_conversation: true
     mappings:
-      - type: from_entity
-        entity: selected_program
-
+    - type: from_entity
+      entity: selected_program
 responses:
   utter_greet:
-    - text: "Привет! Я бот и помогу вам выбрать смену. Сейчас у нас проводятся две смены:\n1. 'Мир наук и электроники' — 23 июня по 6 июля\n2. 'Создание 3D-миров в Roblox' — 7 июля по 20 июля\nО чём вы хотите узнать?"
-
+  - text: "Привет! Я бот и помогу вам выбрать смену. Сейчас у нас проводятся две смены:\n1. 'Мир наук и электроники' — 23 июня по 6 июля\n2. 'Создание 3D-миров в Roblox' — 7 июля по 20 июля\nО чём вы хотите узнать?"
   utter_change_shift:
-    - text: "Хорошо, теперь я рассказываю про смену {selected_program}. Что вы хотите узнать?"
-
+  - text: Хорошо, теперь я рассказываю про смену {selected_program}. Что вы хотите узнать?
   utter_default:
-    - text: "Извините, я не понял вопрос. Попробуйте переформулировать его."
-
+  - text: Извините, я не понял вопрос. Попробуйте переформулировать его.
 actions:
-  - action_ask_about_dates
-  - action_ask_about_food
-  - action_ask_about_preferences
-  - action_ask_about_events
-  - action_ask_about_theme
-  - action_ask_about_science_content
-  - action_ask_about_roblox_content
-  - action_ask_about_part_time
-  - action_ask_about_price
-  - action_ask_about_discounts
-  - action_ask_about_hours
+- action_ask_about_dates
+- action_ask_about_food
+- action_ask_about_preferences
+- action_ask_about_events
+- action_ask_about_theme
+- action_ask_about_science_content
+- action_ask_about_roblox_content
+- action_ask_about_part_time
+- action_ask_about_price
+- action_ask_about_discounts
+- action_ask_about_hours
 
+
+- action_hatsune
+- action_dude
 session_config:
   session_expiration_time: 60
   carry_over_slots_to_new_session: true
