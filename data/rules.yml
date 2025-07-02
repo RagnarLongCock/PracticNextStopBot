@@ -79,12 +79,11 @@ rules:
   - intent: ask_about_hours
   - action: action_ask_about_hours
 
-
-- rule: Ответ на вопрос hatsune
+- rule: Ответ на вопрос testmessage
   steps:
-  - intent: hatsune
-  - action: action_hatsune
-- rule: Ответ на вопрос dude
+  - intent: testmessage
+  - action: action_testmessage
+- rule: Ответ на вопрос bankai
   steps:
-  - intent: dude
-  - action: action_dude
+  - intent: bankai
+  - action: action_bankai

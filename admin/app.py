@@ -2,14 +2,12 @@ from flask import Flask, jsonify, request, render_template
 import os
 import subprocess
 import json
+import sys
 import psutil
 from ruamel.yaml import YAML
 from ruamel.yaml.scalarstring import LiteralScalarString
 
-# Папка текущего файла — admin/
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-
-# Пути к файлам в проекте (относительно BASE_DIR нужно подняться наверх)
 DATA_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "data"))
 ACTIONS_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "actions"))
 
@@ -19,18 +17,14 @@ RESPONSES_FILE = os.path.join(DATA_DIR, "responses.json")
 RULES_FILE = os.path.join(DATA_DIR, "rules.yml")
 ACTIONS_FILE = os.path.join(ACTIONS_DIR, "actions.py")
 
-app = Flask(
-    __name__,
-    template_folder=os.path.join(BASE_DIR, "templates"),
-    static_folder=os.path.join(BASE_DIR, "static"),
-)
+app = Flask(__name__, template_folder=os.path.join(BASE_DIR, "templates"), static_folder=os.path.join(BASE_DIR, "static"))
 
 yaml_ruamel = YAML()
 yaml_ruamel.default_flow_style = False
 yaml_ruamel.allow_unicode = True
 yaml_ruamel.width = 1000
 
-# === Загрузка и сохранение NLU ===
+# === NLU ===
 def load_nlu():
     with open(NLU_FILE, encoding="utf-8") as f:
         data = yaml_ruamel.load(f)
@@ -54,7 +48,7 @@ def save_nlu(intents):
     with open(NLU_FILE, "w", encoding="utf-8") as f:
         yaml_ruamel.dump(data, f)
 
-# === Обновление domain.yml ===
+# === DOMAIN ===
 def update_domain_with_intent(intent_name):
     with open(DOMAIN_FILE, encoding="utf-8") as f:
         domain = yaml_ruamel.load(f)
@@ -71,7 +65,7 @@ def update_domain_with_intent(intent_name):
     with open(DOMAIN_FILE, "w", encoding="utf-8") as f:
         yaml_ruamel.dump(domain, f)
 
-# === Загрузка и сохранение responses.json ===
+# === RESPONSES ===
 def load_responses():
     if os.path.exists(RESPONSES_FILE):
         with open(RESPONSES_FILE, encoding="utf-8") as f:
@@ -82,7 +76,7 @@ def save_responses(data):
     with open(RESPONSES_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-# === Добавление правила в rules.yml ===
+# === RULES ===
 def add_rule_for_custom_action(intent_name):
     if not os.path.exists(RULES_FILE):
         rules_data = {"version": "3.1", "rules": []}
@@ -109,7 +103,7 @@ def add_rule_for_custom_action(intent_name):
     with open(RULES_FILE, "w", encoding="utf-8") as f:
         yaml_ruamel.dump(rules_data, f)
 
-# === Добавление кастомного Action в actions.py ===
+# === ACTION ===
 def append_action_to_file(intent_name):
     class_name = "Action" + "".join(word.capitalize() for word in intent_name.split("_"))
     action_name = f"action_{intent_name}"
@@ -135,7 +129,7 @@ class {class_name}(Action):
     with open(ACTIONS_FILE, "a", encoding="utf-8") as f:
         f.write(code)
 
-# === Роуты ===
+# === ROUTES ===
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -210,7 +204,7 @@ def update_response(action):
 @app.route("/api/train", methods=["POST"])
 def train_model():
     try:
-        result = subprocess.run(["rasa", "train"], capture_output=True, text=True)
+        result = subprocess.run([sys.executable, "-m", "rasa", "train"], capture_output=True, text=True)
         if result.returncode == 0:
             return jsonify({"message": "✅ Модель успешно переобучена"})
         else:
@@ -218,7 +212,7 @@ def train_model():
     except Exception as e:
         return jsonify({"message": f"❌ {str(e)}"}), 500
 
-# === Управление ботом ===
+# === BOT CONTROL ===
 bot_process = None
 actions_process = None
 
@@ -238,9 +232,13 @@ def start_bot():
 
     try:
         if bot_process is None:
-            bot_process = subprocess.Popen(["rasa", "run", "--enable-api", "-p", "5010"])
+            bot_process = subprocess.Popen([
+                "rasa", "run", "--enable-api", "-p", "5010", "--cors", "*"
+            ])
         if actions_process is None:
-            actions_process = subprocess.Popen(["rasa", "run", "actions", "-p", "5055"])
+            actions_process = subprocess.Popen([
+                "rasa", "run", "actions", "-p", "5055"
+            ])
         return jsonify({"message": "✅ Бот и actions запущены"})
     except Exception as e:
         return jsonify({"message": f"❌ Ошибка запуска: {str(e)}"}), 500
@@ -248,23 +246,18 @@ def start_bot():
 @app.route("/api/stop-bot", methods=["POST"])
 def stop_bot():
     global bot_process, actions_process
-
     try:
         stopped = []
-
         if bot_process:
             if kill_process_tree(bot_process.pid):
                 stopped.append("бот")
             bot_process = None
-
         if actions_process:
             if kill_process_tree(actions_process.pid):
                 stopped.append("actions")
             actions_process = None
-
         if not stopped:
             return jsonify({"message": "⚠️ Бот и actions уже остановлены"})
-
         return jsonify({"message": f"🛑 Остановлено: {', '.join(stopped)}"})
     except Exception as e:
         return jsonify({"message": f"❌ Ошибка остановки: {str(e)}"}), 500

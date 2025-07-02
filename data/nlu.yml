@@ -14,7 +14,6 @@ nlu:
     - Приветствую
     - Добрейшего дня
     - Хеллоу
-    - Хелло
     - Хочу задать вопрос
     - Можно спросить?
     - Поговорим?
@@ -315,11 +314,13 @@ nlu:
     - Блабла
     - Рандомный текст
     - Не понял что это
-- intent: hatsune
+- intent: testmessage
   examples: |-
     - пример
-    - Miku
-- intent: dude
-  examples: |-
-    - пример
+    - проверка
+    - this is a test message
     - ЧУВАК
+- intent: bankai
+  examples: |-
+    - пример
+    - BANKAI

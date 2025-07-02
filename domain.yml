@@ -15,8 +15,8 @@ intents:
 - ask_about_hours
 - nlu_fallback
 
-- hatsune
-- dude
+- testmessage
+- bankai
 entities:
 - selected_program
 slots:
@@ -47,8 +47,8 @@ actions:
 - action_ask_about_hours
 
 
-- action_hatsune
-- action_dude
+- action_testmessage
+- action_bankai
 session_config:
   session_expiration_time: 60
   carry_over_slots_to_new_session: true

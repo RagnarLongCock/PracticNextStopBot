@@ -36,10 +36,10 @@
   "action_ask_about_hours": {
     "default": "⏰ Время пребывания детей — с 8:30 до 18:00. Можно выбрать полный день или только отдельные курсы.\nПодробнее: https://www.nextstep66.ru/course/gorodskoj-klub-letnij-drajv-2/"
   },
-  "action_hatsune": {
-    "default": "You can call me miku"
+  "action_testmessage": {
+    "default": "Проверка завершена. ЧУВАААААК"
   },
-  "action_dude": {
-    "default": "ЧУВААААААААК"
+  "action_bankai": {
+    "default": "senbonzakura kageyoshi"
   }
 }

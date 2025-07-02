@@ -128,32 +128,33 @@ class ActionAskAboutHours(Action):
         return []
 
 
-
-
-
-class ActionHatsune(Action):
+class ActionTestmessage(Action):
     def name(self) -> Text:
-        return "action_hatsune"
+        return "action_testmessage"
 
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         program = tracker.get_slot("selected_program")
-        if RESPONSES.get("action_hatsune", {}).get(program):
-            text = RESPONSES["action_hatsune"][program]
+        if RESPONSES.get("action_testmessage", {}).get(program):
+            text = RESPONSES["action_testmessage"][program]
         else:
-            text = RESPONSES.get("action_hatsune", {}).get("default", "Бот пока не знает, что ответить.")
+            text = RESPONSES.get("action_testmessage", {}).get("default", "Бот пока не знает, что ответить.")
         dispatcher.utter_message(text=text)
         return []
 
 
-class ActionDude(Action):
+from typing import Any, Text, Dict, List
+from rasa_sdk import Action, Tracker
+from rasa_sdk.executor import CollectingDispatcher
+
+class ActionBankai(Action):
     def name(self) -> Text:
-        return "action_dude"
+        return "action_bankai"
 
     def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         program = tracker.get_slot("selected_program")
-        if RESPONSES.get("action_dude", {}).get(program):
-            text = RESPONSES["action_dude"][program]
+        if RESPONSES.get("action_bankai", {}).get(program):
+            text = RESPONSES["action_bankai"][program]
         else:
-            text = RESPONSES.get("action_dude", {}).get("default", "Бот пока не знает, что ответить.")
+            text = RESPONSES.get("action_bankai", {}).get("default", "Бот пока не знает, что ответить.")
         dispatcher.utter_message(text=text)
         return []
