@@ -1,0 +1,9 @@
+rasa
+rasa-sdk
+flask
+psutil
+redis
+requests
+dotenv
+pytest-shutil
+ruamel

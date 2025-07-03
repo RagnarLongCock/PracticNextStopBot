@@ -153,10 +153,7 @@ def stop_bot():
 
 #========================GPT module(GIGA chat)==========================
 from GPT_intents.giga import generate_examples
-from GPT_intents.nlu_utils import (
-    loads_nlu, saves_nlu, validate_nlu,
-    backup_nlu, rollback_nlu, LiteralString
-)
+from GPT_intents.nlu_utils import *
 
 
 from GPT_intents.redis_cache import cache_response
