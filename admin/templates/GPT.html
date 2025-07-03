@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Интенты</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='GPT.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Генерация интентов</h1>
+        <label>Интент:</label>
+        <input type="text" id="intent" placeholder="Напр. order_pizza">
+
+        <label>Описание:</label>
+        <textarea id="description" placeholder="Пользователь хочет заказать пиццу"></textarea>
+
+        <div class="buttons">
+            <button onclick="preview()">Предпросмотр</button>
+            <button onclick="generate()">Сгенерировать и сохранить</button>
+            <button onclick="rollback()">Откат</button>
+        </div>
+
+        <div id="output"></div>
+    </div>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
