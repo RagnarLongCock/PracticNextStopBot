@@ -38,6 +38,40 @@
       <button onclick="stopBot()">⛔ Остановить бота</button>
       <pre id="train-status"></pre>
     </section>
+
+    <section>
+
+      <h2>🧰 Поддержка базы данных</h2>
+      <button onclick="runCleanup()">🧹 Очистить старые сообщения</button>
+      <button onclick="runBackup()">💾 Создать резервную копию</button>
+      <pre id="db-status"></pre>
+
+      <h2>История сообщений</h2>
+      <table border="1" style="width: 100%; border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th>Роль</th>
+            <th>Сообщение</th>
+            <th>Время</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for role, message, sent_at in rows %}
+        <tr>
+          <td>{{ role }}</td>
+          <td>{{ message }}</td>
+          <td>{{ sent_at }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="3">Нет сообщений</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </section>
+
+
+
+
   </div>
 
   <script>
@@ -167,6 +201,22 @@
       populateIntents();
       loadResponses();
     };
+
+    async function runCleanup() {
+      const pre = document.getElementById("db-status");
+      pre.textContent = "🧹 Очистка...";
+      const res = await fetch("/api/cleanup", { method: "POST" });
+      const msg = await res.json();
+      pre.textContent = msg.message || msg.error;
+    }
+
+    async function runBackup() {
+      const pre = document.getElementById("db-status");
+      pre.textContent = "💾 Резервное копирование...";
+      const res = await fetch("/api/backup", { method: "POST" });
+      const msg = await res.json();
+      pre.textContent = msg.message || msg.error;
+    }
   </script>
 </body>
 </html>

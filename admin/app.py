@@ -4,6 +4,9 @@ import subprocess
 from nlu_for_admin import *
 import sys
 import psutil
+import psycopg2
+import datetime
+import os
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -19,8 +22,25 @@ def index():
     return render_template("index.html")
 
 @app.route("/admin")
-def admin():
-    return (render_template("admin.html"))
+#База данных
+def admin_panel():
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT
+        type_name AS "отправитель",
+        (data::jsonb) ->> 'text' AS "сообщение",
+        to_timestamp(timestamp) AS "Время отправления"
+        FROM events
+        WHERE type_name IN ('user', 'bot')
+        AND (data::jsonb) ? 'text'
+        ORDER BY timestamp ASC LIMIT 100;
+    """)
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return render_template("admin.html", rows=rows)
+#Конец базы данных
 
 @app.route("/GPT")
 def indexs():
@@ -214,5 +234,56 @@ def rollback():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+#Кнопки БД
+@app.route("/api/cleanup", methods=["POST"])
+def cleanup():
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        # Удаление событий старше 30 дней
+        cur.execute("DELETE FROM events WHERE timestamp < extract(epoch from now() - interval '30 days');")
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({"message": "🧹 Старые данные успешно удалены!"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/backup", methods=["POST"])
+def backup():
+    try:
+        backup_dir = os.path.join(BASE_DIR, "backup_bd")
+        os.makedirs(backup_dir, exist_ok=True)
+
+        from datetime import datetime
+        now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        output_file = os.path.join(backup_dir, f"rasa_db_backup_{now}.sql")
+
+        # Укажи путь к pg_dump здесь:
+        pg_dump_path = r'"C:\Program Files\PostgreSQL\17\bin\pg_dump.exe"'
+
+        cmd = f'{pg_dump_path} -U postgres -d rasa_db -f "{output_file}"'
+        result = subprocess.run(cmd, shell=True, env={**os.environ, "PGPASSWORD": "HatsuneGoyda"})
+
+        if result.returncode == 0:
+            return jsonify({"message": f"💾 Резервная копия создана: {output_file}"})
+        else:
+            return jsonify({"error": "❌ Ошибка при создании резервной копии"}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+def get_db():
+    return psycopg2.connect(
+        dbname="rasa_db",
+        user="postgres",
+        password="HatsuneGoyda",
+        host="localhost",
+        port=5432
+    )
+
 if __name__ == "__main__":
     app.run(debug=True, use_reloader=False)
+
+
+
