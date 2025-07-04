@@ -56,12 +56,12 @@ def update_nlu(intent, examples):
     # Удалим старый интент, если он уже есть
     data['nlu'] = [i for i in data['nlu'] if i.get('intent') != intent]
 
-    # Форматируем примеры в нужный блок
+
     formatted_examples = "\n".join([f"- {ex}" for ex in examples])
     indented = formatted_examples.replace('\n', '\n  ')
     examples_block = f"|\n  {indented}"
 
-    # Добавим интент
+
     data['nlu'].append({
         "intent": intent,
         "examples": examples_block
