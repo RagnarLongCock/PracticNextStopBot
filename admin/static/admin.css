@@ -1,3 +1,8 @@
+/* ========== Общие стили ========== */
+html {
+  overflow-y: scroll;
+}
+
 body {
   font-family: Arial, sans-serif;
   margin: 20px;
@@ -26,6 +31,11 @@ h2 {
   color: #444;
 }
 
+section {
+  margin-bottom: 40px;
+}
+
+/* Инпуты и селекты */
 input[type="text"],
 textarea,
 select {
@@ -42,9 +52,10 @@ textarea {
   resize: vertical;
 }
 
+/* Кнопки */
 button {
   background-color: #009688;
-  color: white;
+  color: #fff;
   border: none;
   padding: 10px 16px;
   border-radius: 6px;
@@ -57,15 +68,7 @@ button:hover {
   background-color: #00796b;
 }
 
-ul {
-  list-style-type: disc;
-  padding-left: 20px;
-}
-
-section {
-  margin-bottom: 40px;
-}
-
+/* pre (логи и статусы) */
 pre {
   background-color: #f0f0f0;
   padding: 10px;
@@ -75,23 +78,33 @@ pre {
   word-wrap: break-word;
 }
 
-label {
-  font-size: 0.95em;
-  display: inline-block;
-  margin-left: 10px;
-  user-select: none;
+/* Размывающий фон при модалке */
+body.modal-open {
+  overflow: hidden;
+}
+.modal-blur {
+  filter: blur(4px);
+  transition: filter 0.3s ease;
 }
 
-/* Модальное окно */
+/* ========== Модальное окно ========== */
 .modal {
   display: none;
   position: fixed;
-  z-index: 999;
   left: 0; top: 0;
   width: 100%; height: 100%;
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(0,0,0,0.4);
   backdrop-filter: blur(3px);
-  animation: fadeIn 0.3s forwards;
+  opacity: 0;
+  z-index: 999;
+}
+
+.modal.opening {
+  animation: fadeInBackdrop 0.3s forwards;
+}
+
+.modal.closing {
+  animation: fadeOutBackdrop 0.3s forwards;
 }
 
 .modal-content {
@@ -103,78 +116,63 @@ label {
   max-height: 90%;
   overflow-y: auto;
   box-shadow: 0 0 20px rgba(0,0,0,0.3);
-  animation: scaleIn 0.3s forwards;
+  opacity: 0;
   position: relative;
+}
+
+.modal-content.opening {
+  animation: scaleIn 0.3s forwards;
+}
+
+.modal-content.closing {
+  animation: scaleOut 0.3s forwards;
 }
 
 /* Кнопка закрытия */
 .close-btn {
   position: absolute;
-  top: 10px; right: 15px;
+  top: 10px;
+  right: 15px;
   font-size: 24px;
   cursor: pointer;
 }
 
-#output, #gpt-output {
+/* Список результатов GPT */
+#gpt-output {
   margin-top: 15px;
   list-style: disc inside;
 }
 
-textarea, input[type="text"] {
-  width: 100%;
-  margin: 5px 0 10px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+/* Подсказка под полем интента */
+.hint {
+  font-size: 0.9em;
+  color: #d32f2f;
+  margin: 4px 0 12px;
 }
 
-.buttons {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.open-modal {
-  display: block !important;
-}
-/* Размытие фона */
-body.modal-open {
-  overflow: hidden;
-}
-.modal-blur {
-  filter: blur(4px);
-  transition: filter 0.3s ease;
-}
-
-/* Анимации */
-@keyframes fadeIn {
+/* ========== Анимации ========== */
+@keyframes fadeInBackdrop {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
-
+@keyframes fadeOutBackdrop {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
 @keyframes scaleIn {
-  from {
-    transform: scale(0.9);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
+  from { transform: scale(0.9); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+@keyframes scaleOut {
+  from { transform: scale(1);   opacity: 1; }
+  to   { transform: scale(0.9); opacity: 0; }
 }
 
-@keyframes fadeOut {
-  from { opacity: 1; transform: scale(1); }
-  to { opacity: 0; transform: scale(0.95); }
-}
-
-.fadeout {
-  animation: fadeOut 0.3s forwards;
-}
-
+/* ========== Таблица примеров интентов ========== */
 .table-container {
   max-height: 200px;
   overflow-y: auto;
+  overflow-x: hidden;
   margin: 10px 0;
   border: 1px solid #ccc;
   border-radius: 5px;
@@ -183,10 +181,12 @@ body.modal-open {
 .examples-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed; /* фиксируем ширины колонок */
   font-size: 14px;
 }
 
-.examples-table th, .examples-table td {
+.examples-table th,
+.examples-table td {
   padding: 8px 10px;
   border-bottom: 1px solid #eee;
 }
@@ -195,7 +195,52 @@ body.modal-open {
   background-color: #f9f9f9;
 }
 
+/* Фиксированная колонка «Удалить» */
+.examples-table th:nth-child(2),
+.examples-table td:nth-child(2) {
+  width: 55px;          /* жёсткая ширина */
+  white-space: nowrap;  /* без переноса */
+  text-align: center;
+  padding: 4px 6px;
+}
+.examples-table th:nth-child(2),
+.examples-table td:nth-child(2) {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+}
+
 .examples-table button {
   font-size: 0.8em;
   padding: 3px 6px;
+}
+
+/* ========== История сообщений ========== */
+.messages-container {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+}
+
+.messages-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.messages-table th {
+  position: sticky;
+  top: 0;
+  background: #f5f5f5;
+  padding: 8px;
+  border-bottom: 2px solid #ddd;
+}
+
+.messages-table td {
+  padding: 6px 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.messages-table tr:nth-child(even) {
+  background: #fafafa;
 }
