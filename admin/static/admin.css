@@ -81,3 +81,121 @@ label {
   margin-left: 10px;
   user-select: none;
 }
+
+/* Модальное окно */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(3px);
+  animation: fadeIn 0.3s forwards;
+}
+
+.modal-content {
+  background-color: #fff;
+  margin: 5% auto;
+  padding: 20px;
+  border-radius: 10px;
+  width: 60%;
+  max-height: 90%;
+  overflow-y: auto;
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  animation: scaleIn 0.3s forwards;
+  position: relative;
+}
+
+/* Кнопка закрытия */
+.close-btn {
+  position: absolute;
+  top: 10px; right: 15px;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+#output, #gpt-output {
+  margin-top: 15px;
+  list-style: disc inside;
+}
+
+textarea, input[type="text"] {
+  width: 100%;
+  margin: 5px 0 10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.open-modal {
+  display: block !important;
+}
+/* Размытие фона */
+body.modal-open {
+  overflow: hidden;
+}
+.modal-blur {
+  filter: blur(4px);
+  transition: filter 0.3s ease;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.95); }
+}
+
+.fadeout {
+  animation: fadeOut 0.3s forwards;
+}
+
+.table-container {
+  max-height: 200px;
+  overflow-y: auto;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.examples-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.examples-table th, .examples-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.examples-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.examples-table button {
+  font-size: 0.8em;
+  padding: 3px 6px;
+}

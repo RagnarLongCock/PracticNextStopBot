@@ -41,5 +41,8 @@
   },
   "action_bankai": {
     "default": "senbonzakura kageyoshi"
+  },
+  "action_a": {
+    "default": ""
   }
 }
