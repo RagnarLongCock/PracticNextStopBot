@@ -5,7 +5,6 @@ from nlu_for_admin import *
 import sys
 import psutil
 import psycopg2
-import datetime
 import os
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -26,6 +25,7 @@ def index():
 def admin_panel():
     conn = get_db()
     cur = conn.cursor()
+    #вывод таблицы сообщений из базы данных
     cur.execute("""
         SELECT
         type_name AS "отправитель",
@@ -40,11 +40,14 @@ def admin_panel():
     cur.close()
     conn.close()
     return render_template("admin.html", rows=rows)
-#Конец базы данных
 
+
+# Рендер веб страниц
 @app.route("/GPT")
 def indexs():
     return render_template("GPT.html")
+
+
 
 @app.route("/api/intents", methods=["GET"])
 def get_intents():
@@ -234,7 +237,9 @@ def rollback():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-#Кнопки БД
+#===============================================================================
+
+#===========================================Кнопки БД========================================
 @app.route("/api/cleanup", methods=["POST"])
 def cleanup():
     try:

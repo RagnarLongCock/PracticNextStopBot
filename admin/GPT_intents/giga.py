@@ -10,21 +10,6 @@ auth = os.getenv("AUTHORISATION")
 
 
 def get_token():
-    # url = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth"
-    # credentials = f"{CLIENT_ID}:{CLIENT_SECRET}"
-    # b64_credentials = base64.b64encode(credentials.encode()).decode()
-    # print(b64_credentials)
-    #
-    # headers = {
-    #     "Authorization": f"Basic {auth}",
-    #     "Content-Type": "application/x-www-form-urlencoded"
-    # }
-    #
-    # data = {"scope": "GIGACHAT_API_PERS"}
-    #
-    # response = requests.post(url, headers=headers, data=data, verify=False)  # verify=True обязательно!
-    # response.raise_for_status()
-    # return response.json()["access_token"]
 
     import requests
 
@@ -42,7 +27,6 @@ def get_token():
 
     response = requests.request("POST", url, headers=headers, data=payload, verify=False)
 
-    # print(response.text)
     return response.json()["access_token"]
 
 def generate_examples(description):
@@ -72,6 +56,3 @@ def generate_examples(description):
     result_text = response.json()["choices"][0]["message"]["content"]
 
     return [line.strip("- ").strip() for line in result_text.split("\n") if line.strip()]
-
-# if __name__ == "__main__":
-#     print("Token:", get_token())
