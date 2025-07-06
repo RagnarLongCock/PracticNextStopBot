@@ -45,28 +45,74 @@
       return text.replace(/([\u{1F600}-\u{1F64F}]|[\u{2700}-\u{27BF}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{2600}-\u{26FF}])/gu, '').trim();
     }
 
-    function addMessage(text, sender) {
+    function addMessage(text, sender, skipSave = false) {
+  const div = document.createElement("div");
+  div.className = "message " + sender;
+
+  if (sender === "bot") {
+    const content = document.createElement("div");
+    content.innerHTML = text;
+
+    const speakBtn = document.createElement("button");
+    speakBtn.textContent = "🔊 Озвучить";
+    speakBtn.className = "speak-btn";
+
+    const plainText = cleanText(content.textContent || content.innerText || "");
+    speakBtn.onclick = () => {
+      if (speechEnabled) speak(plainText);
+    };
+
+    div.appendChild(content);
+    div.appendChild(speakBtn);
+    if (speechEnabled && plainText.length > 0) speak(plainText);
+  } else {
+    div.textContent = text;
+  }
+
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+
+  if (!skipSave) saveMessages();
+}
+
+function saveMessages() {
+  const messages = Array.from(chat.children).map(div => {
+    return {
+      sender: div.classList.contains('user') ? 'user' : 'bot',
+      html: div.innerHTML
+    };
+  });
+  localStorage.setItem('chatMessages', JSON.stringify(messages));
+}
+
+function restoreMessages() {
+  const saved = localStorage.getItem('chatMessages');
+  if (!saved) return;
+  try {
+    const messages = JSON.parse(saved);
+    messages.forEach(({ sender, html }) => {
       const div = document.createElement("div");
       div.className = "message " + sender;
+      div.innerHTML = html;
+
+      // восстановление озвучки
       if (sender === "bot") {
-        const content = document.createElement("div");
-        content.innerHTML = text;
-        const speakBtn = document.createElement("button");
-        speakBtn.textContent = "🔊 Озвучить";
-        speakBtn.className = "speak-btn";
-        const plainText = cleanText(content.textContent || content.innerText || "");
-        speakBtn.onclick = () => {
-          if (speechEnabled) speak(plainText);
-        };
-        div.appendChild(content);
-        div.appendChild(speakBtn);
-        if (speechEnabled && plainText.length > 0) speak(plainText);
-      } else {
-        div.textContent = text;
+        const speakBtn = div.querySelector(".speak-btn");
+        const plainText = cleanText(div.textContent || "");
+        if (speakBtn) {
+          speakBtn.onclick = () => {
+            if (speechEnabled) speak(plainText);
+          };
+        }
       }
+
       chat.appendChild(div);
-      chat.scrollTop = chat.scrollHeight;
-    }
+    });
+    chat.scrollTop = chat.scrollHeight;
+  } catch (e) {
+    console.error("Ошибка восстановления чата:", e);
+  }
+}
 
     function speak(text) {
       if ('speechSynthesis' in window && text) {
@@ -143,6 +189,8 @@
     document.getElementById("themeToggleMobile").addEventListener("click", toggleTheme);
 
     window.onload = () => {
+      restoreMessages();
+      if (!localStorage.getItem('chatMessages')) {
       addMessage(
         "Привет! Я бот и помогу вам с выбором летней смены для ребёнка.<br><br>" +
         "🌿 <b>Мир наук и электроники</b> — проводится с <b>23 июня по 6 июля 2025 года</b><br>" +
@@ -150,7 +198,8 @@
         "Задайте вопрос — и я расскажу про питание, программу, цену и другие детали!",
         "bot"
       );
-    };
+    }
+};
 
     window.addEventListener('DOMContentLoaded', () => {
       const savedTheme = localStorage.getItem('theme');
