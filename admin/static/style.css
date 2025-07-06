@@ -282,45 +282,74 @@ body {
 @media (min-width: 768px) and (max-width: 1024px) {
   html, body {
     height: 100vh;
+    margin: 0;
+    padding: 0;
     overflow: hidden;
   }
 
+  body {
+    display: flex;
+    justify-content: center; /* по горизонтали центрируем контейнер */
+    align-items: flex-start; /* важное изменение — выравниваем контейнер сверху */
+    min-height: 100vh;
+  }
+
   .container {
+    display: flex;
     flex-direction: row;
-    width: 95vw;
+    justify-content: space-between;
+    max-width: 95vw;
     height: 95vh;
-    max-width: 1000px;
-    margin: auto;
     padding: 10px;
-    box-shadow: 0 0 10px #00968488;
     border-radius: 15px;
     border: 1px solid #009685;
+    box-shadow: 0 0 10px #00968488;
+    background-color: var(--container-bg);
+    overflow: hidden;
+    margin-top: 10px;
   }
 
   #pasha {
-    display: flex;
+    flex: 0 0 30%;
     max-width: 30%;
     height: 100%;
     padding: 10px;
+    box-sizing: border-box;
+    overflow-y: auto; /* если будет много контента, прокрутка */
   }
 
+
+
   #messages {
+    flex: 1 1 70%;
     max-width: 70%;
-    padding: 10px;
-    flex-grow: 1;
     height: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin: 0;
   }
 
   #chat {
     flex-grow: 1;
-    margin: 10px 0;
     overflow-y: auto;
+    margin: 0px 0px 10px;
+    max-height: 90%;
   }
 
-  #inputForm {
+  #form_inp {
     margin: 5px;
     padding: 5px;
     flex-shrink: 0;
+  }
+
+  #toggleSpeech,
+  #theme-toggle {
+    font-size: 20px;
+    padding: 3px 6px;
+    transform: scale(1);
   }
 }
 
