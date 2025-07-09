@@ -176,3 +176,21 @@ class ActionA(Action):
             text = RESPONSES.get("action_a", {}).get("default", "Бот пока не знает, что ответить.")
         dispatcher.utter_message(text=text)
         return []
+
+
+from typing import Any, Text, Dict, List
+from rasa_sdk import Action, Tracker
+from rasa_sdk.executor import CollectingDispatcher
+
+class ActionPedagogi1(Action):
+    def name(self) -> Text:
+        return "action_Pedagogi_1"
+
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        program = tracker.get_slot("selected_program")
+        if RESPONSES.get("action_Pedagogi_1", {}).get(program):
+            text = RESPONSES["action_Pedagogi_1"][program]
+        else:
+            text = RESPONSES.get("action_Pedagogi_1", {}).get("default", "Бот пока не знает, что ответить.")
+        dispatcher.utter_message(text=text)
+        return []

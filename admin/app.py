@@ -30,7 +30,7 @@ def admin_panel():
         SELECT
         type_name AS "отправитель",
         (data::jsonb) ->> 'text' AS "сообщение",
-        to_timestamp(timestamp) AS "Время отправления"
+        to_timestamp(timestamp) AS "Время отправления", intent_name AS "имя интента"
         FROM events
         WHERE type_name IN ('user', 'bot')
         AND (data::jsonb) ? 'text'

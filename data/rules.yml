@@ -91,3 +91,7 @@ rules:
   steps:
   - intent: a
   - action: action_a
+- rule: Ответ на вопрос Pedagogi_1
+  steps:
+  - intent: Pedagogi_1
+  - action: action_Pedagogi_1

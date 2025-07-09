@@ -73,17 +73,19 @@
               <th>Роль</th>
               <th>Сообщение</th>
               <th>Время</th>
+              <th>имя интента</th>
             </tr>
           </thead>
           <tbody>
-            {% for role, message, sent_at in rows %}
+            {% for role, message, sent_at, intent_name in rows %}
             <tr>
               <td>{{ role }}</td>
               <td>{{ message }}</td>
               <td>{{ sent_at }}</td>
+              <td>{{ intent_name }}</td>
             </tr>
             {% else %}
-            <tr><td colspan="3">Нет сообщений</td></tr>
+            <tr><td colspan="4">Нет сообщений</td></tr>
             {% endfor %}
           </tbody>
         </table>

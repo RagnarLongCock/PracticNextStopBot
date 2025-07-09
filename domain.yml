@@ -18,6 +18,7 @@ intents:
 - testmessage
 - bankai
 - a
+- Pedagogi_1
 entities:
 - selected_program
 slots:
@@ -51,6 +52,7 @@ actions:
 - action_testmessage
 - action_bankai
 - action_a
+- action_Pedagogi_1
 session_config:
   session_expiration_time: 60
   carry_over_slots_to_new_session: true

@@ -44,5 +44,8 @@
   },
   "action_a": {
     "default": ""
+  },
+  "action_Pedagogi_1": {
+    "default": "В центре работают педагоги по программированию, электронике, английскому языку.\nhttps://www.nextstep66.ru"
   }
 }
