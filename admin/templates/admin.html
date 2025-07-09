@@ -4,14 +4,7 @@
   <meta charset="UTF-8" />
   <title>Административная панель бота</title>
   <link rel="stylesheet" href="/static/admin.css" />
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 </head>
-
-<!-- jQuery и DataTables JS -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-
-
 <body>
   <div class="admin-container">
     <h1>🧠 Админ-панель чат-бота</h1>
@@ -75,7 +68,8 @@
     <section>
       <h2>История сообщений</h2>
       <div class="messages-container">
-        <table id="dialogsTable" class="display">
+        <input type="text" id="search-input" placeholder="🔍 Поиск по сообщениям...">
+        <table class="messages-table">
           <thead>
             <tr>
               <th>Роль</th>
@@ -289,13 +283,42 @@
       }
     }
 
-    $(document).ready(function() {
-      $('#dialogsTable').DataTable({
-        language: {
-          url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/ru.json"
-        }
+    // ======== Поиск по сообщениям ========
+    document.getElementById('search-input').addEventListener('input', function () {
+      const filter = this.value.toLowerCase();
+      const rows = document.querySelectorAll(".messages-table tbody tr");
+
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(filter) ? "" : "none";
       });
     });
+
+    // ======== Сортировка по колонкам ========
+    document.querySelectorAll(".messages-table th").forEach((th, index) => {
+      th.style.cursor = "pointer";
+      th.addEventListener("click", () => {
+        const table = th.closest("table");
+        const tbody = table.querySelector("tbody");
+        const rows = Array.from(tbody.querySelectorAll("tr"));
+
+        const ascending = th.classList.contains("sort-asc");
+        rows.sort((a, b) => {
+          const aText = a.cells[index].innerText.trim();
+          const bText = b.cells[index].innerText.trim();
+          return ascending
+            ? bText.localeCompare(aText, "ru", {numeric: true})
+            : aText.localeCompare(bText, "ru", {numeric: true});
+        });
+
+        th.classList.toggle("sort-asc", !ascending);
+        th.classList.toggle("sort-desc", ascending);
+
+        tbody.innerHTML = "";
+        rows.forEach(row => tbody.appendChild(row));
+      });
+    });
+
 
     // ======== GPT modal logic ========
     const openBtn     = document.getElementById("open-gpt-btn");

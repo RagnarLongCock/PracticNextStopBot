@@ -217,6 +217,7 @@ body.modal-open {
 
 /* ========== История сообщений ========== */
 .messages-container {
+  height: 400px;
   max-height: 400px;
   overflow-y: auto;
   border: 1px solid #aaa;
@@ -243,4 +244,22 @@ body.modal-open {
 
 .messages-table tr:nth-child(even) {
   background: #fafafa;
+}
+
+/* Стили сортировки */
+.messages-table th.sort-asc::after {
+  content: "▲";
+  color: #009688;
+}
+.messages-table th.sort-desc::after {
+  content: "▼";
+  color: #009688;
+}
+
+#search-input {
+   margin: 10px 0;
+   padding: 8px;
+   width: 100%;
+   border-radius: 6px;
+   border: 1px solid #ccc;
 }
