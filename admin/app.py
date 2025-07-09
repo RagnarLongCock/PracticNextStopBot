@@ -6,6 +6,9 @@ import sys
 import psutil
 import psycopg2
 import os
+import io
+import pandas as pd
+from flask import send_file
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -34,7 +37,7 @@ def admin_panel():
         FROM events
         WHERE type_name IN ('user', 'bot')
         AND (data::jsonb) ? 'text'
-        ORDER BY timestamp ASC LIMIT 100;
+        ORDER BY timestamp ASC;
     """)
     rows = cur.fetchall()
     cur.close()
@@ -276,6 +279,43 @@ def backup():
             return jsonify({"error": "❌ Ошибка при создании резервной копии"}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route("/api/download_excel", methods=["GET"])
+def download_excel():
+    conn = get_db()
+    cur = conn.cursor()
+
+    # Получаем данные
+    cur.execute("""
+        SELECT
+        type_name AS "отправитель",
+        (data::jsonb) ->> 'text' AS "сообщение",
+        to_timestamp(timestamp) AS "Время отправления", intent_name AS "имя интента"
+        FROM events
+        WHERE type_name IN ('user', 'bot')
+        AND (data::jsonb) ? 'text'
+        ORDER BY timestamp ASC;
+    """)
+
+    rows = cur.fetchall()
+    df = pd.DataFrame(rows, columns=["role", "message", "sent_at", "intent_name"])
+
+    # Убираем временную зону, если она есть
+    if pd.api.types.is_datetime64tz_dtype(df["sent_at"]):
+        df["sent_at"] = df["sent_at"].dt.tz_localize(None)
+
+    # Подготовка Excel
+    output = io.BytesIO()
+    with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+        df.to_excel(writer, index=False, sheet_name="dialogs")
+    output.seek(0)
+
+    return send_file(
+        output,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        as_attachment=True,
+        download_name="dialogs.xlsx"
+    )
 
 
 def get_db():

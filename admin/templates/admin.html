@@ -4,7 +4,14 @@
   <meta charset="UTF-8" />
   <title>Административная панель бота</title>
   <link rel="stylesheet" href="/static/admin.css" />
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 </head>
+
+<!-- jQuery и DataTables JS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+
 <body>
   <div class="admin-container">
     <h1>🧠 Админ-панель чат-бота</h1>
@@ -60,6 +67,7 @@
       <h2>🧰 Поддержка базы данных</h2>
       <button onclick="runCleanup()">🧹 Очистить старые сообщения</button>
       <button onclick="runBackup()">💾 Создать резервную копию</button>
+      <button onclick="exportExcel()">⬇️ Скачать Excel</button>
       <pre id="db-status"></pre>
     </section>
 
@@ -67,7 +75,7 @@
     <section>
       <h2>История сообщений</h2>
       <div class="messages-container">
-        <table class="messages-table">
+        <table id="dialogsTable" class="display">
           <thead>
             <tr>
               <th>Роль</th>
@@ -261,6 +269,33 @@
       const msg = await (await fetch("/api/backup",{method:"POST"})).json();
       p.textContent = msg.message || msg.error;
     }
+
+    async function exportExcel() {
+      try {
+        const res = await fetch("/api/download_excel");
+        if (!res.ok) throw new Error("Ошибка при скачивании");
+
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "dialogs.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      } catch (e) {
+        alert("Ошибка скачивания Excel: " + e.message);
+      }
+    }
+
+    $(document).ready(function() {
+      $('#dialogsTable').DataTable({
+        language: {
+          url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/ru.json"
+        }
+      });
+    });
 
     // ======== GPT modal logic ========
     const openBtn     = document.getElementById("open-gpt-btn");
