@@ -2,27 +2,43 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Админка бота</title>
+  <title>Административная панель бота</title>
   <link rel="stylesheet" href="/static/admin.css" />
 </head>
 <body>
   <div class="admin-container">
     <h1>🧠 Админ-панель чат-бота</h1>
 
+    <!-- Добавление нового интента -->
     <section>
       <h2>➕ Добавить новый интент</h2>
       <input type="text" id="new-intent-name" placeholder="Название интента">
       <button onclick="createIntent()">Добавить интент</button>
+      <button id="open-gpt-btn">Сгенерировать интент</button>
     </section>
 
+    <!-- Существующие интенты и примеры -->
     <section>
       <h2>📚 Существующие интенты</h2>
       <select id="intent-list" onchange="loadExamples()"></select>
-      <ul id="examples-list"></ul>
+
+      <div class="table-container">
+        <table class="examples-table">
+          <thead>
+            <tr>
+              <th>Фраза</th>
+              <th>Удалить</th>
+            </tr>
+          </thead>
+          <tbody id="examples-list"></tbody>
+        </table>
+      </div>
+
       <input type="text" id="new-example" placeholder="Новая фраза">
       <button onclick="addExample()">Добавить фразу</button>
     </section>
 
+    <!-- Ответы кастомных action'ов -->
     <section>
       <h2>💬 Ответы кастомных action'ов</h2>
       <select id="response-list" onchange="loadResponseText()"></select>
@@ -30,6 +46,7 @@
       <button onclick="saveResponse()">💾 Сохранить ответ</button>
     </section>
 
+    <!-- Управление моделью и ботом -->
     <section>
       <h2>⚙️ Управление моделью и ботом</h2>
       <button onclick="trainModel()">🔁 Переобучить Rasa</button>
@@ -37,54 +54,93 @@
       <button onclick="stopBot()">⛔ Остановить бота</button>
       <pre id="train-status"></pre>
     </section>
+
+    <!-- 🧰 Поддержка базы данных -->
+    <!--
+    <section>
+      <h2>🧰 Поддержка базы данных</h2>
+      <button onclick="runCleanup()">🧹 Очистить старые сообщения</button>
+      <button onclick="runBackup()">💾 Создать резервную копию</button>
+      <button onclick="exportExcel()">⬇️ Скачать Excel</button>
+      <pre id="db-status"></pre>
+    </section>
+    -->
+
+    <!-- История сообщений (удалено) -->
+
+    <!-- Модальное окно GPT -->
+    <div id="gpt-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <h2>🤖 Генерация интентов</h2>
+
+        <label>Интент:</label>
+        <input type="text" id="gpt-intent" placeholder="Напр. order_pizza" />
+        <p class="hint"><b>⚠️ Название интента должно быть на английском языке, без пробелов (используйте нижнее подчёркивание).</b></p>
+
+        <label>Описание:</label>
+        <textarea id="gpt-description" placeholder="Пользователь хочет заказать пиццу"></textarea>
+
+        <div class="buttons">
+          <button onclick="preview()">Предпросмотр</button>
+          <button onclick="generate()">Сгенерировать и сохранить</button>
+          <button onclick="rollback()">Откат</button>
+        </div>
+        <ul id="gpt-output"></ul>
+      </div>
+    </div>
   </div>
 
   <script>
-    let responses = {};
-
     async function fetchJSON(url, options = {}) {
       const res = await fetch(url, options);
       return await res.json();
     }
 
+    window.onload = () => {
+      populateIntents();
+      loadResponses();
+    };
+
     async function populateIntents() {
       const intents = await fetchJSON("/api/intents");
+      intents.sort((a, b) => a.localeCompare(b, 'ru', {ignorePunctuation: true}));
       const select = document.getElementById("intent-list");
       select.innerHTML = "";
       intents.forEach(name => {
         const option = document.createElement("option");
-        option.value = name;
-        option.textContent = name;
-        select.appendChild(option);
+        option.value = option.textContent = name;
+        select.append(option);
       });
       if (intents.length) loadExamples();
     }
 
     async function loadExamples() {
       const intent = document.getElementById("intent-list").value;
-      const examples = await fetchJSON(`/api/intents/${intent}`);
-      const ul = document.getElementById("examples-list");
-      ul.innerHTML = "";
+      let examples = await fetchJSON(`/api/intents/${intent}`);
+      examples.sort((a, b) => a.localeCompare(b, 'ru', {ignorePunctuation: true}));
+      const tbody = document.getElementById("examples-list");
+      tbody.innerHTML = "";
       examples.forEach((ex, idx) => {
-        const li = document.createElement("li");
-        li.innerHTML = `${ex} <button onclick="deleteExample('${intent}', ${idx})">🗑️</button>`;
-        ul.appendChild(li);
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${ex}</td><td><button onclick="deleteExample('${intent}', ${idx})">🗑️</button></td>`;
+        tbody.append(tr);
       });
     }
 
-    async function deleteExample(intent, index) {
-      await fetch(`/api/intents/${intent}/${index}`, { method: "DELETE" });
+    async function deleteExample(intent, idx) {
+      await fetch(`/api/intents/${intent}/${idx}`, { method: "DELETE" });
       loadExamples();
     }
 
     async function addExample() {
       const intent = document.getElementById("intent-list").value;
-      const text = document.getElementById("new-example").value.trim();
-      if (!text) return;
+      const t = document.getElementById("new-example").value.trim();
+      if (!t) return;
       await fetch(`/api/intents/${intent}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text })
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ text: t })
       });
       document.getElementById("new-example").value = "";
       loadExamples();
@@ -95,45 +151,41 @@
       if (!name) return;
       const res = await fetch("/api/intents", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type":"application/json" },
         body: JSON.stringify({ name })
       });
-      const msg = await res.json();
-      alert(msg.message);
+      alert((await res.json()).message);
       document.getElementById("new-intent-name").value = "";
       populateIntents();
       loadResponses();
     }
 
+    let responses = {};
     async function loadResponses() {
       responses = await fetchJSON("/api/responses");
-      const select = document.getElementById("response-list");
-      select.innerHTML = "";
-      Object.keys(responses).forEach(key => {
-        const option = document.createElement("option");
-        option.value = key;
-        option.textContent = key;
-        select.appendChild(option);
+      const s = document.getElementById("response-list");
+      s.innerHTML = "";
+      Object.keys(responses).forEach(a => {
+        const o = document.createElement("option");
+        o.value = o.textContent = a;
+        s.append(o);
       });
-      if (Object.keys(responses).length > 0) {
-        loadResponseText();
-      }
+      if (Object.keys(responses).length) loadResponseText();
     }
 
     function loadResponseText() {
-      const action = document.getElementById("response-list").value;
-      const data = responses[action];
-      const text = typeof data === "string" ? data : (data?.default || "");
-      document.getElementById("response-text").value = text;
+      const a = document.getElementById("response-list").value;
+      const v = responses[a];
+      document.getElementById("response-text").value = typeof v==="string" ? v : (v.default||"");
     }
 
     async function saveResponse() {
-      const action = document.getElementById("response-list").value;
-      const text = document.getElementById("response-text").value;
-      await fetch(`/api/responses/${action}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text })
+      const a = document.getElementById("response-list").value;
+      const t = document.getElementById("response-text").value;
+      await fetch(`/api/responses/${a}`, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ text: t })
       });
       alert("Ответ сохранён");
     }
@@ -141,31 +193,110 @@
     async function trainModel() {
       const pre = document.getElementById("train-status");
       pre.textContent = "⏳ Переобучение...";
-      const res = await fetch("/api/train", { method: "POST" });
-      const msg = await res.json();
-      pre.textContent = msg.message;
+      const msg = (await fetch("/api/train",{method:"POST"})).json();
+      pre.textContent = (await msg).message;
     }
 
     async function startBot() {
-      const pre = document.getElementById("train-status");
-      pre.textContent = "▶️ Запуск...";
-      const res = await fetch("/api/start-bot", { method: "POST" });
-      const msg = await res.json();
-      pre.textContent = msg.message;
+      const p = document.getElementById("train-status");
+      p.textContent="▶️ Запуск...";
+      const msg=(await fetch("/api/start-bot",{method:"POST"})).json();
+      p.textContent=(await msg).message;
     }
 
     async function stopBot() {
-      const pre = document.getElementById("train-status");
-      pre.textContent = "⛔ Остановка...";
-      const res = await fetch("/api/stop-bot", { method: "POST" });
-      const msg = await res.json();
-      pre.textContent = msg.message;
+      const p = document.getElementById("train-status");
+      p.textContent="⛔ Остановка...";
+      const msg=(await fetch("/api/stop-bot",{method:"POST"})).json();
+      p.textContent=(await msg).message;
     }
 
-    window.onload = () => {
-      populateIntents();
-      loadResponses();
-    };
+    // GPT modal logic
+    const openBtn = document.getElementById("open-gpt-btn");
+    const modal = document.getElementById("gpt-modal");
+    const modalContent = modal.querySelector(".modal-content");
+    const closeBtn = modal.querySelector(".close-btn");
+
+    openBtn.addEventListener("click", () => {
+      modal.style.display = "block";
+      modal.classList.remove("closing");
+      modalContent.classList.remove("closing");
+      modal.classList.add("opening");
+      modalContent.classList.add("opening");
+      document.body.classList.add("modal-open");
+      document.querySelector(".admin-container").classList.add("modal-blur");
+    });
+
+    closeBtn.addEventListener("click", closeModal);
+    window.addEventListener("click", e => {
+      if (e.target === modal) closeModal();
+    });
+
+    function closeModal() {
+      modal.classList.remove("opening");
+      modalContent.classList.remove("opening");
+      modal.classList.add("closing");
+      modalContent.classList.add("closing");
+      modalContent.addEventListener("animationend", onAnimEnd);
+    }
+
+    function onAnimEnd(e) {
+      if (e.animationName!=="scaleOut") return;
+      modalContent.removeEventListener("animationend", onAnimEnd);
+      modal.style.display = "none";
+      modal.classList.remove("closing");
+      modalContent.classList.remove("closing");
+      document.body.classList.remove("modal-open");
+      document.querySelector(".admin-container").classList.remove("modal-blur");
+    }
+
+    async function generate() {
+      const intent = document.getElementById("gpt-intent").value.trim();
+      const description = document.getElementById("gpt-description").value.trim();
+      if (!intent || !description) return alert("Укажите оба поля");
+      const res = await fetch("/api/generate", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({intent,description})
+      });
+      const data = await res.json();
+      if (data.examples) {
+        displayGPTOutput(data.examples);
+        alert("✅ Интент сохранён");
+        populateIntents();
+      } else alert(data.error || "Ошибка");
+    }
+
+    async function preview() {
+      const description = document.getElementById("gpt-description").value.trim();
+      if (!description) return alert("Укажите описание");
+      const res = await fetch("/api/preview", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({description})
+      });
+      const data = await res.json();
+      if (data.preview) displayGPTOutput(data.preview);
+      else alert(data.error || "Ошибка предпросмотра");
+    }
+
+    async function rollback() {
+      if (!confirm("Откатить изменения?")) return;
+      const res = await fetch("/api/rollback", {method:"POST"});
+      const data = await res.json();
+      if (data.status) {
+        alert("✅ Откат выполнен");
+        populateIntents();
+      } else alert(data.error || "Ошибка");
+    }
+
+    function displayGPTOutput(examples) {
+      const out = document.getElementById("gpt-output");
+      out.innerHTML = "";
+      examples.forEach(e => {
+        const li = document.createElement("li");
+        li.textContent = e;
+        out.append(li);
+      });
+    }
   </script>
 </body>
 </html>

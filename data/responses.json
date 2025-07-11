@@ -41,5 +41,14 @@
   },
   "action_bankai": {
     "default": "senbonzakura kageyoshi"
+  },
+  "action_a": {
+    "default": ""
+  },
+  "action_Pedagogi_1": {
+    "default": "В центре работают педагоги по программированию, электронике, английскому языку.\nhttps://www.nextstep66.ru"
+  },
+  "action_test_gpt": {
+    "default": ""
   }
 }
