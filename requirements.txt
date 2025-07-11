@@ -6,6 +6,8 @@ redis
 requests
 dotenv
 pytest-shutil
-ruamel
+ruamel.yaml
 pandas
 xlsxwriter
+docker
+docker-py

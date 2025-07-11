@@ -270,7 +270,7 @@ def backup():
         # Укажи путь к pg_dump здесь:
         pg_dump_path = r'"C:\Program Files\PostgreSQL\17\bin\pg_dump.exe"'
 
-        cmd = f'{pg_dump_path} -U postgres -d rasa_db -f "{output_file}"'
+        cmd = f'pg_dump -U postgres -d rasa_db -h db -f "{output_file}"'
         result = subprocess.run(cmd, shell=True, env={**os.environ, "PGPASSWORD": "HatsuneGoyda"})
 
         if result.returncode == 0:
@@ -323,12 +323,12 @@ def get_db():
         dbname="rasa_db",
         user="postgres",
         password="HatsuneGoyda",
-        host="localhost",
+        host="db",
         port=5432
     )
 
 if __name__ == "__main__":
-    app.run(debug=True, use_reloader=False)
+    app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=False)
 
 
 

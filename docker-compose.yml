@@ -1,0 +1,43 @@
+version: '3.9'
+services:
+
+  bot:
+    build: .
+    ports:
+      - "5000:5000"
+      - "5010:5010"
+      - "5055:5055"
+    container_name: practic_nextstop_bot
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./backup_bd:/app/backup_bd
+  db:
+    image: postgres:17
+    container_name: practic_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    container_name: practic_redis
+    restart: always
+    volumes:
+      - redis_data:/data
+
+volumes:
+  db_data:
+  redis_data:

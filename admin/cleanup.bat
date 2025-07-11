@@ -1,6 +1,7 @@
-@echo off
-set PGPASSWORD=HatsuneGoyda
-"C:\Program Files\PostgreSQL\17\bin\psql.exe" -U postgres -d rasa_db -f "cleanup.sql"
+
+::set PGPASSWORD=HatsuneGoyda
+docker exec -i practic_db psql -U postgres -d rasa_db < cleanup.sql
+
 
 ::Запусти "Планировщик заданий Windows"
 ::Добавь задание: запуск cleanup.bat раз в сутки

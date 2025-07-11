@@ -1,7 +1,7 @@
 import redis
 import json
 
-REDIS_HOST = 'localhost'
+REDIS_HOST = 'redis'
 REDIS_PORT = 6379
 
 class RedisCache:

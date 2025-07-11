@@ -4,7 +4,7 @@ action_endpoint:
 tracker_store:
   type: SQL
   dialect: "postgresql"
-  url: "localhost"
+  url: "db"
   port: 5432
   username: "postgres"
   password: "HatsuneGoyda"
@@ -13,7 +13,7 @@ tracker_store:
 
 lock_store:
   type: redis
-  url: "localhost"
+  url: "redis"
   port: 6379
   db: 0
   key_prefix: "lock"
