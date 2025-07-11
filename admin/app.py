@@ -217,11 +217,20 @@ def generate():
         })
 
         saves_nlu(nlu)
+
+        # === ДОБАВЛЯЕМ ПОДДЕРЖКУ ОТВЕТА И ACTION ===
+        responses = load_responses()
+        responses[f"action_{intent}"] = {"default": ""}
+        save_responses(responses)
+        append_action_to_file(intent)
+
         cache_response.set(intent, cleaned)
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
     return jsonify({"intent": intent, "examples": cleaned})
+
 
 @app.route('/api/preview', methods=['POST'])
 def preview():
