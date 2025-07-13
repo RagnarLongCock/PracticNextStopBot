@@ -3,7 +3,7 @@ import subprocess
 from nlu_for_admin import *
 import sys
 import psutil
-import psycopg2  # ❌ база данных больше не нужна
+import psycopg2
 import os
 import io
 import pandas as pd
