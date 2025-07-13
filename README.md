@@ -60,6 +60,18 @@ stepBOTagain/
 └── README.md                 # Документация по проекту (этот файл)
 ```
 
+
+так же в корне проекта создать файл .env с такой структурой:
+
+```
+AUTHORISATION=ваш токен авторизации giga chat
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=HatsuneGoyda
+PGHOST=localhost
+PGPORT=5432
+```
+
+
 ## ⚙️ Установка и запуск
 
 ### 1. Клонирование репозитория
