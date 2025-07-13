@@ -1,4 +1,4 @@
-rasa
+rasa==3.6.21
 rasa-sdk
 flask
 psutil
@@ -6,6 +6,6 @@ redis
 requests
 dotenv
 pytest-shutil
-ruamel
+ruamel.yaml
 pandas
 xlsxwriter
