@@ -257,37 +257,75 @@ def cleanup():
     try:
         conn = get_db()
         cur = conn.cursor()
-        # Удаление событий старше 30 дней
-        cur.execute("DELETE FROM events WHERE timestamp < extract(epoch from now() - interval '30 days');")
+
+        # Пробуем удалить события старше 30 дней
+        delete_query = """
+            DELETE FROM events
+            WHERE timestamp < EXTRACT(EPOCH FROM (NOW() - INTERVAL '30 days'));
+        """
+        cur.execute(delete_query)
+        deleted_rows = cur.rowcount
+
         conn.commit()
         cur.close()
         conn.close()
-        return jsonify({"message": "🧹 Старые данные успешно удалены!"})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
+        return jsonify({
+            "message": f"🧹 Удалено {deleted_rows} старых событий"
+        })
+
+    except Exception as e:
+        import traceback
+        return jsonify({
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }), 500
+
+
+
+from datetime import datetime
 @app.route("/api/backup", methods=["POST"])
 def backup():
     try:
-        backup_dir = os.path.join(BASE_DIR, "backup_bd")
+        backup_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "backup_bd")
         os.makedirs(backup_dir, exist_ok=True)
 
-        from datetime import datetime
         now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         output_file = os.path.join(backup_dir, f"rasa_db_backup_{now}.sql")
 
-        # Укажи путь к pg_dump здесь:
-        pg_dump_path = r'"C:\Program Files\PostgreSQL\17\bin\pg_dump.exe"'
+        # Параметры из окружения (передаём через .env в docker-compose)
+        db_user = os.environ.get("POSTGRES_USER", "postgres")
+        db_name = os.environ.get("POSTGRES_DB", "rasa_db")
+        db_host = os.environ.get("PGHOST", "db")
+        db_port = os.environ.get("PGPORT", "5432")
+        db_pass = os.environ.get("POSTGRES_PASSWORD", "")
 
-        cmd = f'pg_dump -U postgres -d rasa_db -h db -f "{output_file}"'
-        result = subprocess.run(cmd, shell=True, env={**os.environ, "PGPASSWORD": "HatsuneGoyda"})
+        # Формируем команду
+        cmd = [
+            "pg_dump",
+            "-h", db_host,
+            "-p", db_port,
+            "-U", db_user,
+            "-d", db_name,
+            "-f", output_file
+        ]
+
+        # Передаём пароль через окружение
+        env = os.environ.copy()
+        env["PGPASSWORD"] = db_pass
+
+        result = subprocess.run(cmd, env=env, capture_output=True, text=True)
 
         if result.returncode == 0:
             return jsonify({"message": f"💾 Резервная копия создана: {output_file}"})
         else:
             return jsonify({"error": "❌ Ошибка при создании резервной копии"}), 500
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        import traceback
+        return jsonify({
+            "error": str(e),
+            "traceback": traceback.format_exc()
+        }), 500
 
 @app.route("/api/download_excel", methods=["GET"])
 def download_excel():
