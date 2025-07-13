@@ -24,25 +24,25 @@ stepBOTagain/
 │   └── stories.yml
 ├── admin/
 |    ├── backups/ # Резервные копии
-|    │   └── nlu_backup.yml # YAML-файл с резервной копией NLU
+|    │   └── nlu_backup.yml   # YAML-файл с резервной копией NLU
 |    │
-|    ├── GPT_intents/ # Логика и утилиты для работы с GPT-интентами
-|    │   ├── config.py # Конфигурации
-|    │   ├── giga.py # Основной модуль логики (предположительно)
-|    │   ├── nlu_utils.py # Вспомогательные функции для NLU
-|    │   └── redis_cache.py # Работа с кэшем Redis
+|    ├── GPT_intents/         # Логика и утилиты для работы с GPT-интентами
+|    │   ├── config.py        # Конфигурации
+|    │   ├── giga.py          # Основной модуль логики
+|    │   ├── nlu_utils.py     # Вспомогательные функции для NLU
+|    │   └── redis_cache.py   # Работа с кэшем Redis
 |    │
 |    ├── static/ # Статические файлы
-|    │   ├── image/ # Изображения
-|    │   ├── admin.css # Стили для админки
-|    │   ├── app.js # JavaScript логика
-|    │   ├── GPT.css # Стили GPT-интерфейса
-|    │   └── style.css # Общие стили
+|    │   ├── image/           # Изображения
+|    │   ├── admin.css        # Стили для админки
+|    │   ├── app.js           # JavaScript логика
+|    │   ├── GPT.css
+|    │   └── style.css        # Общие стили
 |    │
 |    ├── templates/ # HTML-шаблоны
-|    │   ├── admin.html # Шаблон админки
-|    │   ├── GPT.html # Интерфейс для GPT
-|    │   └── index.html # Главная страница
+|    │   ├── admin.html       # Шаблон админки
+|    │   ├── GPT.html 
+|    │   └── index.html       # Главная страница
 │
 ├── app.py # Основной входной скрипт приложения
 ├── nlu_for_admin.py # NLU логика, адаптированная для админки
@@ -108,6 +108,8 @@ redis-server.exe
 переходим по данному пути ```C:\Program Files\PostgreSQL\17\pgAdmin 4\runtime```
 
 запускаем файл ```pgAdmin4.exe```
+
+чтобы база данных автоматически очищалась от данных старше 30 дней, добавте файл cleanup.bat в планировщик задач windows
 
 
 ### 7. Запуск приложения
