@@ -218,6 +218,8 @@ def generate():
 
         saves_nlu(nlu)
 
+        update_domain_with_intent(intent)
+        add_rule_for_custom_action(intent)
         # === ДОБАВЛЯЕМ ПОДДЕРЖКУ ОТВЕТА И ACTION ===
         responses = load_responses()
         responses[f"action_{intent}"] = {"default": ""}
