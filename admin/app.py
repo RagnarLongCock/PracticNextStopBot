@@ -20,22 +20,21 @@ def index():
 
 @app.route("/admin")
 def admin_panel():
-    # ======= БАЗА УБРАНА =========
-    # conn = get_db()
-    # cur = conn.cursor()
-    # cur.execute("""
-    #     SELECT
-    #     type_name AS "отправитель",
-    #     (data::jsonb) ->> 'text' AS "сообщение",
-    #     to_timestamp(timestamp) AS "Время отправления", intent_name AS "имя интента"
-    #     FROM events
-    #     WHERE type_name IN ('user', 'bot')
-    #     AND (data::jsonb) ? 'text'
-    #     ORDER BY timestamp ASC;
-    # """)
-    # rows = cur.fetchall()
-    # cur.close()
-    # conn.close()
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT
+        type_name AS "отправитель",
+        (data::jsonb) ->> 'text' AS "сообщение",
+        to_timestamp(timestamp) AS "Время отправления", intent_name AS "имя интента"
+        FROM events
+        WHERE type_name IN ('user', 'bot')
+        AND (data::jsonb) ? 'text'
+        ORDER BY timestamp ASC;
+    """)
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
     rows = []  # просто пустой список
     return render_template("admin.html", rows=rows)
 
