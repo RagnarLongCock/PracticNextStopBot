@@ -237,22 +237,86 @@ def rollback():
 
 # ====== УБРАНО: очистка, backup, excel ========
 # @app.route("/api/cleanup", methods=["POST"])
-# def cleanup(): ...
-
+# def cleanup():
+#     try:
+#         conn = get_db()
+#         cur = conn.cursor()
+#         # Удаление событий старше 30 дней
+#         cur.execute("DELETE FROM events WHERE timestamp < extract(epoch from now() - interval '30 days');")
+#         conn.commit()
+#         cur.close()
+#         conn.close()
+#         return jsonify({"message": "🧹 Старые данные успешно удалены!"})
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+#
 # @app.route("/api/backup", methods=["POST"])
-# def backup(): ...
-
+# def backup():
+#     try:
+#         backup_dir = os.path.join(BASE_DIR, "backup_bd")
+#         os.makedirs(backup_dir, exist_ok=True)
+#
+#         from datetime import datetime
+#         now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+#         output_file = os.path.join(backup_dir, f"rasa_db_backup_{now}.sql")
+#
+#         # Укажи путь к pg_dump здесь:
+#         pg_dump_path = r'"C:\Program Files\PostgreSQL\17\bin\pg_dump.exe"'
+#
+#         cmd = f'{pg_dump_path} -U postgres -d rasa_db -f "{output_file}"'
+#         result = subprocess.run(cmd, shell=True, env={**os.environ, "PGPASSWORD": "HatsuneGoyda"})
+#
+#         if result.returncode == 0:
+#             return jsonify({"message": f"💾 Резервная копия создана: {output_file}"})
+#         else:
+#             return jsonify({"error": "❌ Ошибка при создании резервной копии"}), 500
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+#
 # @app.route("/api/download_excel", methods=["GET"])
-# def download_excel(): ...
-
-# def get_db():
-#     return psycopg2.connect(
-#         dbname="rasa_db",
-#         user="postgres",
-#         password="HatsuneGoyda",
-#         host="localhost",
-#         port=5432
+# def download_excel():
+#     conn = get_db()
+#     cur = conn.cursor()
+#
+#     # Получаем данные
+#     cur.execute("""
+#                 SELECT type_name AS "отправитель",
+#                        (data::jsonb) ->> 'text' AS "сообщение", to_timestamp(timestamp) AS "Время отправления", intent_name AS "имя интента"
+#                 FROM events
+#                 WHERE type_name IN ('user'
+#                     , 'bot')
+#                   AND (data ::jsonb) ? 'text'
+#                 ORDER BY timestamp ASC;
+#                 """)
+#
+#     rows = cur.fetchall()
+#     df = pd.DataFrame(rows, columns=["role", "message", "sent_at", "intent_name"])
+#
+#     # Убираем временную зону, если она есть
+#     if pd.api.types.is_datetime64tz_dtype(df["sent_at"]):
+#         df["sent_at"] = df["sent_at"].dt.tz_localize(None)
+#
+#     # Подготовка Excel
+#     output = io.BytesIO()
+#     with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+#         df.to_excel(writer, index=False, sheet_name="dialogs")
+#     output.seek(0)
+#
+#     return send_file(
+#         output,
+#         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+#         as_attachment=True,
+#         download_name="dialogs.xlsx"
 #     )
+
+def get_db():
+    return psycopg2.connect(
+        dbname="rasa_db",
+        user="postgres",
+        password="HatsuneGoyda",
+        host="localhost",
+        port=5432
+    )
 
 if __name__ == "__main__":
     app.run(debug=True, use_reloader=False)
